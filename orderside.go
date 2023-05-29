@@ -25,6 +25,10 @@ func rbtComparator(a, b interface{}) int {
 	return a.(decimal.Decimal).Cmp(b.(decimal.Decimal))
 }
 
+var _ fmt.Stringer = (*Side)(nil)
+var _ json.Marshaler = (*Side)(nil)
+var _ json.Unmarshaler = (*Side)(nil)
+
 // NewOrderSide creates new OrderSide manager
 func NewOrderSide() *OrderSide {
 	return &OrderSide{

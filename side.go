@@ -2,6 +2,7 @@ package orderbook
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 )
 
@@ -13,6 +14,10 @@ const (
 	Sell Side = iota
 	Buy
 )
+
+var _ fmt.Stringer = (*Side)(nil)
+var _ json.Marshaler = (*Side)(nil)
+var _ json.Unmarshaler = (*Side)(nil)
 
 // String implements fmt.Stringer interface
 func (s Side) String() string {

@@ -17,6 +17,10 @@ type Order struct {
 	price     decimal.Decimal
 }
 
+var _ fmt.Stringer = (*Order)(nil)
+var _ json.Marshaler = (*Order)(nil)
+var _ json.Unmarshaler = (*Order)(nil)
+
 // NewOrder creates new constant object Order
 func NewOrder(orderID string, side Side, quantity, price decimal.Decimal, timestamp time.Time) *Order {
 	return &Order{
