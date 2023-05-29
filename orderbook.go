@@ -3,6 +3,7 @@ package orderbook
 import (
 	"container/list"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -15,6 +16,10 @@ type OrderBook struct {
 	asks *OrderSide
 	bids *OrderSide
 }
+
+var _ fmt.Stringer = (*Side)(nil)
+var _ json.Marshaler = (*Side)(nil)
+var _ json.Unmarshaler = (*Side)(nil)
 
 // NewOrderBook creates Orderbook object
 func NewOrderBook() *OrderBook {
@@ -33,17 +38,20 @@ type PriceLevel struct {
 
 // ProcessMarketOrder immediately gets definite quantity from the order book with market price
 // Arguments:
-//      side     - what do you want to do (ob.Sell or ob.Buy)
-//      quantity - how much quantity you want to sell or buy
-//      * to create new decimal number you should use decimal.New() func
-//        read more at https://github.com/shopspring/decimal
+//
+//	side     - what do you want to do (ob.Sell or ob.Buy)
+//	quantity - how much quantity you want to sell or buy
+//	* to create new decimal number you should use decimal.New() func
+//	  read more at https://github.com/shopspring/decimal
+//
 // Return:
-//      error        - not nil if price is less or equal 0
-//      done         - not nil if your market order produces ends of anoter orders, this order will add to
-//                     the "done" slice
-//      partial      - not nil if your order has done but top order is not fully done
-//      partialQuantityProcessed - if partial order is not nil this result contains processed quatity from partial order
-//      quantityLeft - more than zero if it is not enought orders to process all quantity
+//
+//	error        - not nil if price is less or equal 0
+//	done         - not nil if your market order produces ends of anoter orders, this order will add to
+//	               the "done" slice
+//	partial      - not nil if your order has done but top order is not fully done
+//	partialQuantityProcessed - if partial order is not nil this result contains processed quatity from partial order
+//	quantityLeft - more than zero if it is not enought orders to process all quantity
 func (ob *OrderBook) ProcessMarketOrder(side Side, quantity decimal.Decimal) (done []*Order, partial *Order, partialQuantityProcessed, quantityLeft decimal.Decimal, err error) {
 	if quantity.Sign() <= 0 {
 		return nil, nil, decimal.Zero, decimal.Zero, ErrInvalidQuantity
@@ -77,20 +85,23 @@ func (ob *OrderBook) ProcessMarketOrder(side Side, quantity decimal.Decimal) (do
 
 // ProcessLimitOrder places new order to the OrderBook
 // Arguments:
-//      side     - what do you want to do (ob.Sell or ob.Buy)
-//      orderID  - unique order ID in depth
-//      quantity - how much quantity you want to sell or buy
-//      price    - no more expensive (or cheaper) this price
-//      * to create new decimal number you should use decimal.New() func
-//        read more at https://github.com/shopspring/decimal
+//
+//	side     - what do you want to do (ob.Sell or ob.Buy)
+//	orderID  - unique order ID in depth
+//	quantity - how much quantity you want to sell or buy
+//	price    - no more expensive (or cheaper) this price
+//	* to create new decimal number you should use decimal.New() func
+//	  read more at https://github.com/shopspring/decimal
+//
 // Return:
-//      error   - not nil if quantity (or price) is less or equal 0. Or if order with given ID is exists
-//      done    - not nil if your order produces ends of anoter order, this order will add to
-//                the "done" slice. If your order have done too, it will be places to this array too
-//      partial - not nil if your order has done but top order is not fully done. Or if your order is
-//                partial done and placed to the orderbook without full quantity - partial will contain
-//                your order with quantity to left
-//      partialQuantityProcessed - if partial order is not nil this result contains processed quatity from partial order
+//
+//	error   - not nil if quantity (or price) is less or equal 0. Or if order with given ID is exists
+//	done    - not nil if your order produces ends of anoter order, this order will add to
+//	          the "done" slice. If your order have done too, it will be places to this array too
+//	partial - not nil if your order has done but top order is not fully done. Or if your order is
+//	          partial done and placed to the orderbook without full quantity - partial will contain
+//	          your order with quantity to left
+//	partialQuantityProcessed - if partial order is not nil this result contains processed quatity from partial order
 func (ob *OrderBook) ProcessLimitOrder(side Side, orderID string, quantity, price decimal.Decimal) (done []*Order, partial *Order, partialQuantityProcessed decimal.Decimal, err error) {
 	if _, ok := ob.orders[orderID]; ok {
 		return nil, nil, decimal.Zero, ErrOrderExists

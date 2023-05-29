@@ -16,6 +16,10 @@ type OrderQueue struct {
 	orders *list.List
 }
 
+var _ fmt.Stringer = (*Side)(nil)
+var _ json.Marshaler = (*Side)(nil)
+var _ json.Unmarshaler = (*Side)(nil)
+
 // NewOrderQueue creates and initialize OrderQueue object
 func NewOrderQueue(price decimal.Decimal) *OrderQueue {
 	return &OrderQueue{
